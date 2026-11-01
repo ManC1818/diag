@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Diagnóstico de pantalla, teclado y audio</title>
+<style>
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#14212b; --muted:#5b6b78; --line:#cfd8df;
+  --accent:#0b7a75; --accent-ink:#ffffff; --ok:#1f8a4c; --warn:#b3261e; --keyok:#cdeedd;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#10181e; --panel:#18232b; --ink:#e6eef3; --muted:#9bb0be; --line:#2c3b46;
+    --accent:#3fc1b9; --accent-ink:#06211f; --ok:#5fd18d; --warn:#ff8a80; --keyok:#1f5a3c;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10181e; --panel:#18232b; --ink:#e6eef3; --muted:#9bb0be; --line:#2c3b46;
+  --accent:#3fc1b9; --accent-ink:#06211f; --ok:#5fd18d; --warn:#ff8a80; --keyok:#1f5a3c;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 18px;max-width:60ch}
+nav{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+nav button{flex:1 1 120px;padding:12px 14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;font:inherit;font-weight:600;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+section{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+section.on{display:block}
+h2{font-size:1.15rem;margin:0 0 6px}
+p{margin:0 0 12px;max-width:68ch}
+.btn{padding:10px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border-color:var(--line)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin:14px 0}
+.sw{height:56px;border-radius:6px;border:1px solid var(--line);cursor:pointer;padding:0}
+#fs{position:fixed;inset:0;z-index:99;display:none;cursor:pointer}
+#fs.on{display:block}
+#fs span{position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:6px 10px;border-radius:6px;background:rgba(0,0,0,.65);color:#fff;font-size:.85rem}
+.kb{display:flex;flex-direction:column;gap:5px;margin:14px 0;overflow-x:auto;padding-bottom:6px}
+.kr{display:flex;gap:5px;min-width:700px}
+.k{flex:1 1 0;min-width:0;height:44px;border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.78rem;background:var(--bg);user-select:none}
+.k.done{background:var(--keyok);border-color:var(--ok)}
+.k.down{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.k.gap{visibility:hidden}
+.stat{font-weight:600}
+.last{font-family:ui-monospace,Consolas,monospace;color:var(--muted);min-height:1.5em}
+label{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+input[type=range]{width:min(320px,100%);accent-color:var(--accent)}
+.meter{height:16px;width:min(420px,100%);background:var(--bg);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--ok);transition:width .06s}
+.msg{color:var(--muted);min-height:1.5em}
+.msg.err{color:var(--warn)}
+.chk{list-style:none;padding:0;margin:12px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 16px}
+.chk li{color:var(--muted)}
+.chk li.ok{color:var(--ok);font-weight:600}
+select{padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;max-width:100%}
+#cam{width:100%;max-width:640px;display:block;border-radius:8px;background:#000;aspect-ratio:4/3;object-fit:contain}
+#tpad{position:relative;height:260px;border:2px dashed var(--line);border-radius:10px;overflow:hidden;touch-action:none;user-select:none;background:var(--bg)}
+#tpad canvas{position:absolute;inset:0;width:100%;height:100%}
+#tcoord{position:absolute;left:10px;top:8px}
+#tov{position:fixed;inset:0;z-index:99;display:none;background:var(--bg);touch-action:none}
+#tov.on{display:block}
+#tcan{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#tinfo{position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:6px 10px;border-radius:6px;background:rgba(0,0,0,.7);color:#fff;font-size:.85rem;pointer-events:none}
+#tx{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top,0px))}
+</style>
+</head>
+<body>
+<main>
+  <h1>Diagnóstico de tu computadora</h1>
+  <p class="sub">Prueba los colores de la pantalla, cada tecla del teclado, el audio de bocinas y micrófono, la cámara, el touchpad y la pantalla táctil. Todo funciona en tu navegador y nada se envía a ningún lado.</p>
+
+  <nav role="tablist" aria-label="Pruebas">
+    <button role="tab" aria-selected="true" data-t="pantalla">Pantalla</button>
+    <button role="tab" aria-selected="false" data-t="teclado">Teclado</button>
+    <button role="tab" aria-selected="false" data-t="audio">Audio</button>
+    <button role="tab" aria-selected="false" data-t="camara">Cámara</button>
+    <button role="tab" aria-selected="false" data-t="touchpad">Touchpad</button>
+    <button role="tab" aria-selected="false" data-t="tactil">Pantalla táctil</button>
+  </nav>
+
+  <section id="pantalla" class="on">
+    <h2>Colores y píxeles muertos</h2>
+    <p>Inicia la prueba y recorre los colores con clic, espacio o las flechas. Busca puntos que no cambian de color (píxeles muertos), manchas o zonas más claras. Esc para salir.</p>
+    <div class="row"><button class="btn" id="startScreen">Iniciar prueba en pantalla completa</button></div>
+    <div class="swatches" id="swatches" aria-label="Elige un color para empezar ahí"></div>
+  </section>
+
+  <section id="teclado">
+    <h2>Prueba de teclas</h2>
+    <p>Presiona cada tecla. Se pone verde cuando se detecta. Si alguna no cambia, puede estar sucia o dañada.</p>
+    <div class="kb" id="kb" aria-label="Teclado en pantalla"></div>
+    <div class="row">
+      <span class="stat" id="kcount">0 teclas probadas</span>
+      <button class="btn alt" id="kreset">Reiniciar</button>
+    </div>
+    <div class="last" id="klast" aria-live="polite">Última tecla: ninguna</div>
+  </section>
+
+  <section id="audio">
+    <h2>Bocinas o audífonos</h2>
+    <p>Baja el volumen del sistema antes de empezar. Debes oír el tono solo del lado que indique cada botón.</p>
+    <div class="row">
+      <button class="btn" data-pan="-1">Izquierdo</button>
+      <button class="btn" data-pan="0">Ambos</button>
+      <button class="btn" data-pan="1">Derecho</button>
+      <button class="btn alt" id="sweep">Barrido de frecuencias</button>
+    </div>
+    <label>Frecuencia <input type="range" id="freq" min="50" max="12000" value="440"> <output id="freqo">440 Hz</output></label>
+    <label>Volumen <input type="range" id="vol" min="0" max="100" value="20"> <output id="volo">20 %</output></label>
+    <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+    <h2>Micrófono</h2>
+    <p>Habla o aplaude: la barra debe moverse. El navegador te pedirá permiso para usar el micrófono.</p>
+    <div class="row"><button class="btn" id="micBtn">Activar micrófono</button></div>
+    <div class="meter" role="img" aria-label="Nivel del micrófono"><i id="mbar"></i></div>
+    <div class="msg" id="amsg" aria-live="polite"></div>
+  </section>
+
+  <section id="camara">
+    <h2>Cámara web</h2>
+    <p>Activa la cámara y comprueba que la imagen se vea nítida, con buen color y sin retraso. El navegador te pedirá permiso.</p>
+    <div class="row"><select id="camSel" aria-label="Elegir cámara"></select><button class="btn" id="camBtn">Activar cámara</button></div>
+    <video id="cam" autoplay playsinline muted></video>
+    <div class="msg" id="cmsg" aria-live="polite"></div>
+  </section>
+
+  <section id="touchpad">
+    <h2>Touchpad (o mouse)</h2>
+    <p>Haz cada gesto dentro del recuadro. Cada acción se marca cuando se detecta. El pellizco para zoom se detecta como Ctrl + desplazamiento.</p>
+    <div id="tpad" aria-label="Zona de prueba del touchpad"><canvas id="tcv"></canvas><div class="last" id="tcoord"></div></div>
+    <ul class="chk" id="tlist"></ul>
+    <button class="btn alt" id="treset">Reiniciar</button>
+  </section>
+
+  <section id="tactil">
+    <h2>Pantalla táctil</h2>
+    <p>Inicia la prueba y toca o arrastra el dedo hasta cubrir todos los recuadros, incluidos los bordes y esquinas. Prueba también con varios dedos a la vez. Si tu pantalla no es táctil, puedes practicar con el mouse.</p>
+    <div class="row"><button class="btn" id="tstart">Iniciar prueba en pantalla completa</button></div>
+    <div class="last" id="tres"></div>
+  </section>
+</main>
+
+<div id="tov" role="dialog" aria-label="Prueba táctil"><canvas id="tcan"></canvas><div id="tinfo"></div><button class="btn" id="tx">Salir</button></div>
+
+<div id="fs" role="dialog" aria-label="Prueba de color"><span id="fsl"></span></div>
+
+<script>
+(function(){
+  // Pestañas
+  var tabs=document.querySelectorAll('nav button');
+  tabs.forEach(function(b){b.addEventListener('click',function(){
+    tabs.forEach(function(x){x.setAttribute('aria-selected',x===b)});
+    document.querySelectorAll('section').forEach(function(s){s.classList.toggle('on',s.id===b.dataset.t)});
+  })});
+  function activeTab(){return document.querySelector('nav [aria-selected="true"]').dataset.t}
+
+  // ===== Pantalla =====
+  var colors=[['Negro','#000'],['Blanco','#fff'],['Rojo','#f00'],['Verde','#0f0'],['Azul','#00f'],['Cian','#0ff'],['Magenta','#f0f'],['Amarillo','#ff0'],['Gris medio','#808080'],['Degradado de grises','linear-gradient(90deg,#000,#fff)'],['Barras de color','linear-gradient(90deg,#fff 0 14.28%,#ff0 0 28.56%,#0ff 0 42.84%,#0f0 0 57.12%,#f0f 0 71.4%,#f00 0 85.68%,#00f 0)']];
+  var fs=document.getElementById('fs'),fsl=document.getElementById('fsl'),idx=0,open=false;
+  var sw=document.getElementById('swatches');
+  colors.forEach(function(c,i){var b=document.createElement('button');b.className='sw';b.style.background=c[1];b.title=c[0];b.setAttribute('aria-label',c[0]);b.onclick=function(){show(i)};sw.appendChild(b)});
+  function show(i){
+    idx=(i+colors.length)%colors.length;open=true;fs.classList.add('on');
+    fs.style.background=colors[idx][1];
+    var dark=['Negro','Azul','Gris medio'].indexOf(colors[idx][0])>-1;
+    fsl.textContent=colors[idx][0]+' ('+(idx+1)+' de '+colors.length+') · Esc para salir';
+    if(!document.fullscreenElement&&fs.requestFullscreen){fs.requestFullscreen().catch(function(){})}
+  }
+  function close(){open=false;fs.classList.remove('on');if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(function(){})}
+  document.getElementById('startScreen').onclick=function(){show(0)};
+  fs.addEventListener('click',function(){show(idx+1)});
+  document.addEventListener('fullscreenchange',function(){if(!document.fullscreenElement&&open)close()});
+
+  // ===== Teclado =====
+  var rows=[
+    ['Escape:Esc','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Delete:Supr'],
+    ['Backquote:º','Digit1:1','Digit2:2','Digit3:3','Digit4:4','Digit5:5','Digit6:6','Digit7:7','Digit8:8','Digit9:9','Digit0:0','Minus:\'','Equal:¡','Backspace:Borrar:2'],
+    ['Tab:Tab:1.5','KeyQ:Q','KeyW:W','KeyE:E','KeyR:R','KeyT:T','KeyY:Y','KeyU:U','KeyI:I','KeyO:O','KeyP:P','BracketLeft:`','BracketRight:+','Enter:Enter:1.5'],
+    ['CapsLock:Bloq Mayús:1.8','KeyA:A','KeyS:S','KeyD:D','KeyF:F','KeyG:G','KeyH:H','KeyJ:J','KeyK:K','KeyL:L','Semicolon:Ñ','Quote:´','Backslash:ç','Enter:↵:0.7'],
+    ['ShiftLeft:Shift:1.3','IntlBackslash:&lt;&gt;','KeyZ:Z','KeyX:X','KeyC:C','KeyV:V','KeyB:B','KeyN:N','KeyM:M','Comma:,','Period:.','Slash:-','ShiftRight:Shift:2.4'],
+    ['ControlLeft:Ctrl:1.3','MetaLeft:Win:1.2','AltLeft:Alt:1.2','Space:Espacio:6','AltRight:Alt Gr:1.2','ContextMenu:Menú','ControlRight:Ctrl:1.3','ArrowLeft:←','ArrowUp:↑','ArrowDown:↓','ArrowRight:→']
+  ];
+  var kb=document.getElementById('kb'),map={},seen={};
+  rows.forEach(function(r){
+    var d=document.createElement('div');d.className='kr';
+    r.forEach(function(s){
+      var p=s.split(':'),code=p[0],label=p[1]||p[0],w=parseFloat(p[2]||1);
+      var k=document.createElement('div');k.className='k';k.style.flexGrow=w;k.innerHTML=label;k.dataset.code=code;
+      d.appendChild(k);(map[code]=map[code]||[]).push(k);
+    });
+    kb.appendChild(d);
+  });
+  var total=Object.keys(map).length,kc=document.getElementById('kcount'),kl=document.getElementById('klast');
+  function count(){kc.textContent=Object.keys(seen).filter(function(c){return map[c]}).length+' de '+total+' teclas probadas'}
+  count();
+  document.addEventListener('keydown',function(e){
+    if(open){
+      if(e.key==='Escape'){close()}
+      else if(e.key==='ArrowLeft'){show(idx-1)}
+      else{show(idx+1)}
+      e.preventDefault();return;
+    }
+    if(activeTab()!=='teclado')return;
+    e.preventDefault();
+    seen[e.code]=1;
+    (map[e.code]||[]).forEach(function(k){k.classList.add('down','done')});
+    kl.textContent='Última tecla: '+(e.key===' '?'Espacio':e.key)+' · código '+e.code+(map[e.code]?'':' (no está en el dibujo)');
+    count();
+  });
+  document.addEventListener('keyup',function(e){(map[e.code]||[]).forEach(function(k){k.classList.remove('down')})});
+  document.getElementById('kreset').onclick=function(){seen={};document.querySelectorAll('.k').forEach(function(k){k.classList.remove('done','down')});kl.textContent='Última tecla: ninguna';count()};
+
+  // ===== Audio =====
+  var ctx=null,freq=document.getElementById('freq'),vol=document.getElementById('vol');
+  function ac(){ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();return ctx}
+  freq.oninput=function(){document.getElementById('freqo').textContent=freq.value+' Hz'};
+  vol.oninput=function(){document.getElementById('volo').textContent=vol.value+' %'};
+  function tone(pan,f0,f1,dur){
+    var c=ac(),o=c.createOscillator(),g=c.createGain(),p=c.createStereoPanner?c.createStereoPanner():null,t=c.currentTime,v=vol.value/100*0.5;
+    o.type='sine';o.frequency.setValueAtTime(f0,t);
+    if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+0.03);g.gain.setValueAtTime(v,t+dur-0.05);g.gain.linearRampToValueAtTime(0,t+dur);
+    o.connect(g);if(p){p.pan.value=pan;g.connect(p);p.connect(c.destination)}else{g.connect(c.destination)}
+    o.start(t);o.stop(t+dur);
+  }
+  document.querySelectorAll('[data-pan]').forEach(function(b){b.onclick=function(){tone(parseFloat(b.dataset.pan),parseFloat(freq.value),0,1.5)}});
+  document.getElementById('sweep').onclick=function(){tone(0,100,12000,6)};
+
+  var micBtn=document.getElementById('micBtn'),mbar=document.getElementById('mbar'),amsg=document.getElementById('amsg'),stream=null,raf=0;
+  micBtn.onclick=function(){
+    if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null;cancelAnimationFrame(raf);mbar.style.width='0';micBtn.textContent='Activar micrófono';amsg.textContent='';return}
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){amsg.className='msg err';amsg.textContent='Este navegador no permite acceder al micrófono.';return}
+    navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){
+      stream=s;var c=ac(),src=c.createMediaStreamSource(s),an=c.createAnalyser();an.fftSize=1024;src.connect(an);
+      var buf=new Uint8Array(an.fftSize),peak=0;
+      amsg.className='msg';amsg.textContent='Escuchando…';micBtn.textContent='Detener micrófono';
+      (function loop(){
+        an.getByteTimeDomainData(buf);var m=0;for(var i=0;i<buf.length;i++){m=Math.max(m,Math.abs(buf[i]-128))}
+        var lvl=Math.min(1,m/128*2.5);peak=Math.max(peak,lvl);mbar.style.width=(lvl*100)+'%';
+        if(peak>0.08)amsg.textContent='El micrófono responde correctamente.';
+        raf=requestAnimationFrame(loop);
+      })();
+    }).catch(function(){amsg.className='msg err';amsg.textContent='No se pudo usar el micrófono. Revisa el permiso del navegador y que no esté silenciado en el sistema.'});
+  };
+  // ===== Utilidades nuevas =====
+  var $=function(i){return document.getElementById(i)};
+  function chk(ul,items){
+    items.forEach(function(it){var li=document.createElement('li');li.id=ul.id+'_'+it[0];li.textContent='○ '+it[1];ul.appendChild(li)});
+    var st={};
+    return {
+      mark:function(id){var li=$(ul.id+'_'+id);if(li&&!st[id]){st[id]=1;li.textContent='✓ '+li.textContent.slice(2);li.className='ok'}},
+      reset:function(){st={};items.forEach(function(it){var li=$(ul.id+'_'+it[0]);li.textContent='○ '+it[1];li.className=''})}
+    };
+  }
+
+  // ===== Cámara =====
+  var cam=$('cam'),camSel=$('camSel'),camBtn=$('camBtn'),cmsg=$('cmsg'),cs=null;
+  function cset(t,err){cmsg.textContent=t;cmsg.className='msg'+(err?' err':'')}
+  function listCams(cur){
+    return navigator.mediaDevices.enumerateDevices().then(function(d){
+      camSel.innerHTML='';
+      d.filter(function(x){return x.kind==='videoinput'}).forEach(function(x,i){
+        var o=document.createElement('option');o.value=x.deviceId;o.textContent=x.label||('Cámara '+(i+1));camSel.appendChild(o);
+      });
+      if(cur)camSel.value=cur;
+    });
+  }
+  function stopCam(){if(cs){cs.getTracks().forEach(function(t){t.stop()});cs=null}cam.srcObject=null;camBtn.textContent='Activar cámara'}
+  function startCam(){
+    stopCam();
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){cset('Este navegador no permite acceder a la cámara.',true);return}
+    navigator.mediaDevices.getUserMedia({video:camSel.value?{deviceId:{exact:camSel.value}}:true}).then(function(s){
+      cs=s;cam.srcObject=s;camBtn.textContent='Detener cámara';
+      var st=s.getVideoTracks()[0].getSettings();
+      cset('Cámara activa: '+st.width+'×'+st.height+(st.frameRate?' a '+Math.round(st.frameRate)+' fps':'')+'.');
+      return listCams(st.deviceId);
+    }).catch(function(){cset('No se pudo usar la cámara. Revisa el permiso del navegador, que ninguna otra aplicación la esté usando y que no esté desactivada en Windows (Configuración > Privacidad > Cámara).',true)});
+  }
+  camBtn.onclick=function(){if(cs){stopCam();cset('')}else{startCam()}};
+  camSel.onchange=function(){if(cs)startCam()};
+  tabs.forEach(function(b){b.addEventListener('click',function(){if(b.dataset.t!=='camara'&&cs){stopCam();cset('')}})});
+
+  // ===== Touchpad =====
+  var pad=$('tpad'),tcv=$('tcv'),tc=tcv.getContext('2d'),tco=$('tcoord'),prev=null,dist=0;
+  var tl=chk($('tlist'),[['mover','Mover el cursor'],['izq','Clic izquierdo'],['der','Clic derecho'],['med','Clic central'],['dbl','Doble clic'],['drag','Arrastrar con clic sostenido'],['sv','Desplazar en vertical'],['sh','Desplazar en horizontal'],['zoom','Pellizcar para zoom']]);
+  function fit(){var r=pad.getBoundingClientRect(),w=Math.round(r.width),h=Math.round(r.height);if(w&&(tcv.width!==w||tcv.height!==h)){tcv.width=w;tcv.height=h}}
+  function pos(e){var r=pad.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]}
+  pad.addEventListener('pointermove',function(e){
+    fit();var p=pos(e);tl.mark('mover');
+    tco.textContent='x '+Math.round(p[0])+' · y '+Math.round(p[1])+' · botones '+e.buttons;
+    if(prev){
+      tc.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue(e.buttons&1?'--ok':'--accent');
+      tc.lineWidth=e.buttons?4:2;tc.beginPath();tc.moveTo(prev[0],prev[1]);tc.lineTo(p[0],p[1]);tc.stroke();
+      if(e.buttons&1){dist+=Math.hypot(p[0]-prev[0],p[1]-prev[1]);if(dist>150)tl.mark('drag')}
+    }
+    prev=p;
+  });
+  pad.addEventListener('pointerleave',function(){prev=null;dist=0});
+  pad.addEventListener('pointerup',function(){dist=0});
+  pad.addEventListener('mousedown',function(e){e.preventDefault()});
+  pad.addEventListener('pointerdown',function(e){if(e.button===0)tl.mark('izq');if(e.button===1)tl.mark('med');if(e.button===2)tl.mark('der');dist=0});
+  pad.addEventListener('dblclick',function(){tl.mark('dbl')});
+  pad.addEventListener('contextmenu',function(e){e.preventDefault()});
+  pad.addEventListener('wheel',function(e){
+    e.preventDefault();
+    if(e.ctrlKey){tl.mark('zoom')}else{if(e.deltaY)tl.mark('sv');if(e.deltaX)tl.mark('sh')}
+  },{passive:false});
+  $('treset').onclick=function(){tl.reset();fit();tc.clearRect(0,0,tcv.width,tcv.height);tco.textContent=''};
+
+  // ===== Pantalla táctil =====
+  var tov=$('tov'),tcan=$('tcan'),tx2=tcan.getContext('2d'),tinfo=$('tinfo'),tres=$('tres');
+  var tOpen=false,cells={},cols=2,rows=2,cw=1,ch=1,ptrs={},maxP=0,W=1,H=1;
+  function tinit(){
+    W=tov.clientWidth;H=tov.clientHeight;tcan.width=W;tcan.height=H;
+    cols=Math.max(2,Math.round(W/70));rows=Math.max(2,Math.round(H/70));cw=W/cols;ch=H/rows;cells={};tdraw();
+  }
+  function tmark(x,y){var c=Math.min(cols-1,Math.max(0,Math.floor(x/cw))),r=Math.min(rows-1,Math.max(0,Math.floor(y/ch)));cells[r*cols+c]=1}
+  function tdraw(){
+    var s=getComputedStyle(tov),ok=s.getPropertyValue('--ok'),ac=s.getPropertyValue('--accent'),ln=s.getPropertyValue('--line');
+    tx2.clearRect(0,0,W,H);
+    tx2.globalAlpha=.45;tx2.fillStyle=ok;
+    Object.keys(cells).forEach(function(k){var i=+k;tx2.fillRect((i%cols)*cw,Math.floor(i/cols)*ch,cw,ch)});
+    tx2.globalAlpha=1;tx2.strokeStyle=ln;tx2.lineWidth=1;tx2.beginPath();
+    for(var c=0;c<=cols;c++){tx2.moveTo(c*cw,0);tx2.lineTo(c*cw,H)}
+    for(var r=0;r<=rows;r++){tx2.moveTo(0,r*ch);tx2.lineTo(W,r*ch)}
+    tx2.stroke();
+    tx2.fillStyle=ac;tx2.globalAlpha=.6;
+    Object.keys(ptrs).forEach(function(id){var p=ptrs[id];tx2.beginPath();tx2.arc(p.x,p.y,34,0,6.283);tx2.fill()});
+    tx2.globalAlpha=1;
+    var n=Object.keys(cells).length;
+    tinfo.textContent='Recuadros cubiertos: '+n+' de '+(cols*rows)+' · Dedos a la vez: '+Object.keys(ptrs).length+' (máximo '+maxP+')'+(n===cols*rows?' · Toda la pantalla respondió':'');
+  }
+  tcan.addEventListener('pointerdown',function(e){ptrs[e.pointerId]={x:e.clientX,y:e.clientY};maxP=Math.max(maxP,Object.keys(ptrs).length);tmark(e.clientX,e.clientY);tdraw()});
+  tcan.addEventListener('pointermove',function(e){if(ptrs[e.pointerId]){ptrs[e.pointerId]={x:e.clientX,y:e.clientY};tmark(e.clientX,e.clientY);tdraw()}});
+  ['pointerup','pointercancel','pointerleave'].forEach(function(n){tcan.addEventListener(n,function(e){delete ptrs[e.pointerId];tdraw()})});
+  function tstart(){tOpen=true;ptrs={};maxP=0;tov.classList.add('on');tinit();if(tov.requestFullscreen)tov.requestFullscreen().catch(function(){})}
+  function texit(){
+    if(!tOpen)return;tOpen=false;tov.classList.remove('on');
+    tres.textContent='Última prueba: '+Object.keys(cells).length+' de '+(cols*rows)+' recuadros cubiertos, máximo '+maxP+' toques simultáneos.';
+    if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(function(){});
+  }
+  $('tstart').onclick=tstart;$('tx').onclick=texit;
+  window.addEventListener('resize',function(){if(tOpen)tinit()});
+  document.addEventListener('fullscreenchange',function(){if(!document.fullscreenElement&&tOpen)texit()});
+  document.addEventListener('keydown',function(e){if(tOpen&&e.key==='Escape')texit()});
+})();
+</script>
+</body>
+</html>
