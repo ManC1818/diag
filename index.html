@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Práctica interactiva de matemáticas de primaria, secundaria y preparatoria. Funciona sin internet.">
+  <title>Matemáticas en práctica · Ejercicios interactivos</title>
+  <style>
+    :root { color-scheme:light; --bg:#f3f7fd; --grid:#dce7f5; --card:#fff; --card-2:#f7faff; --text:#172d4e; --muted:#61718a; --accent:#306bd9; --accent-dark:#1c53b6; --accent-soft:#eaf2ff; --answer:#bc295f; --answer-soft:#fff0f5; --border:#d8e1ef; --shadow:0 20px 55px rgba(27,61,119,.09); }
+    :root[data-theme="dark"] { color-scheme:dark; --bg:#101727; --grid:#1c2a44; --card:#1a2539; --card-2:#202d43; --text:#eff5ff; --muted:#abbbd5; --accent:#83abff; --accent-dark:#b6ccff; --accent-soft:#263958; --answer:#ff83ac; --answer-soft:#43263c; --border:#35445e; --shadow:0 20px 55px rgba(0,0,0,.22); }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme]) {color-scheme:dark; --bg:#101727; --grid:#1c2a44; --card:#1a2539; --card-2:#202d43; --text:#eff5ff; --muted:#abbbd5; --accent:#83abff; --accent-dark:#b6ccff; --accent-soft:#263958; --answer:#ff83ac; --answer-soft:#43263c; --border:#35445e; --shadow:0 20px 55px rgba(0,0,0,.22);} }
+    * {box-sizing:border-box}
+    html {scroll-behavior:smooth}
+    body {margin:0;min-height:100vh;background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:34px 34px;color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+    button,select,input {font:inherit}
+    button {cursor:pointer;transition:transform .16s,background .16s,border-color .16s}
+    button:active {transform:scale(.98)}
+    button:disabled {cursor:not-allowed;opacity:.52}
+    :focus-visible {outline:3px solid var(--accent);outline-offset:3px}
+    .shell {width:min(1100px,calc(100% - 28px));margin:30px auto 36px}
+    .top {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:23px}
+    .brand {display:flex;align-items:center;gap:12px}
+    .logo {display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:var(--accent);color:var(--card);font-size:1.7rem;font-weight:900;box-shadow:0 7px 18px rgba(43,104,206,.24)}
+    .brand h1 {margin:0;font-size:clamp(1.2rem,3.5vw,1.65rem);letter-spacing:-.035em}
+    .brand p {margin:0;color:var(--muted);font-size:.88rem}
+    .button {border:1px solid transparent;border-radius:11px;padding:11px 16px;font-weight:650;background:var(--accent);color:var(--card)}
+    .button:hover {background:var(--accent-dark)}
+    .secondary {background:var(--card);border-color:var(--border);color:var(--text)}
+    .secondary:hover {background:var(--accent-soft)}
+    .ghost {background:transparent;border-color:var(--border);color:var(--muted)}
+    .ghost:hover {background:var(--accent-soft);color:var(--text)}
+    .small {font-size:.86rem;padding:8px 11px}
+    .layout {display:grid;grid-template-columns:minmax(0,1.58fr) minmax(300px,1fr);gap:20px;align-items:start}
+    .panel {border:1px solid var(--border);background:var(--card);border-radius:22px;box-shadow:var(--shadow)}
+    .exercise {padding:27px 29px 25px;min-height:520px;display:flex;flex-direction:column}
+    .meta {display:flex;flex-wrap:wrap;gap:9px;justify-content:space-between;align-items:center}
+    .pill {border-radius:100px;background:var(--accent-soft);color:var(--accent-dark);font-size:.82rem;font-weight:700;padding:7px 12px}
+    .count {font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
+    .prompt {text-align:center;display:flex;flex:1;min-height:195px;align-items:center;justify-content:center;flex-direction:column;padding:23px 3px 12px}
+    .eyebrow {margin:0 0 10px;text-transform:uppercase;letter-spacing:.15em;font-size:.75rem;font-weight:800;color:var(--muted)}
+    .question {font-family:"Segoe UI",system-ui,sans-serif;font-weight:690;line-height:1.34;letter-spacing:-.035em;font-size:calc(clamp(1.7rem,4.2vw,3.15rem) * var(--zoom,1));overflow-wrap:anywhere;max-width:100%;margin:0}
+    .answer-panel {background:var(--answer-soft);border:1px solid color-mix(in srgb,var(--answer) 22%,transparent);border-radius:16px;padding:15px;text-align:center;min-height:90px;display:grid;place-items:center}
+    .answer-label {font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:2px}
+    .answer {font-size:calc(clamp(1.55rem,3.2vw,2.5rem) * var(--zoom,1));font-weight:750;color:var(--answer);line-height:1.35;overflow-wrap:anywhere}
+    .answer-placeholder {color:var(--muted);font-size:.94rem}
+    .explain {margin-top:14px;border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:var(--card-2);font-size:.92rem}
+    .explain strong {display:block;margin-bottom:4px}
+    .explain p {margin:0;color:var(--muted)}
+    .progress-row {display:flex;justify-content:space-between;gap:8px;font-size:.8rem;color:var(--muted);margin:25px 0 8px}
+    .track {width:100%;height:9px;overflow:hidden;border-radius:100px;background:var(--grid)}
+    .fill {height:100%;width:0;background:var(--accent);border-radius:inherit;transition:width .08s linear}
+    .track.result .fill {background:var(--answer)}
+    .actions {display:flex;flex-wrap:wrap;gap:9px;margin-top:21px}
+    .actions .button {flex:1 1 135px}
+    .settings {padding:23px}
+    .section-head {margin-bottom:20px}
+    .section-head h2 {font-size:1.12rem;margin:0}
+    .section-head p {font-size:.87rem;color:var(--muted);margin:3px 0 0}
+    .field {display:block;margin-bottom:16px}
+    .field-name {display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;font-size:.86rem;font-weight:650}
+    .field-name output {color:var(--accent-dark);font-weight:750;font-variant-numeric:tabular-nums}
+    select {background:var(--card-2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px;width:100%;min-width:0}
+    input[type=range] {width:100%;cursor:pointer;accent-color:var(--accent)}
+    input[type=checkbox] {width:17px;height:17px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+    .twocol {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+    .rule {border:none;border-top:1px solid var(--border);margin:19px 0}
+    .check {display:flex;align-items:center;gap:9px;cursor:pointer;font-size:.9rem;margin:10px 0;color:var(--text)}
+    .themes {margin-top:20px;padding:22px 25px}
+    .themes-head {display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:13px}
+    .themes h2 {margin:0;font-size:1.12rem}
+    .theme-list {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 14px}
+    .theme-list .check {border:1px solid var(--border);background:var(--card-2);padding:9px 11px;border-radius:11px;margin:0}
+    .summary {display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:17px 4px 0;color:var(--muted);font-size:.84rem}
+    .summary kbd {font:inherit;border:1px solid var(--border);border-radius:4px;padding:1px 4px;background:var(--card)}
+    .empty {margin-top:8px;color:var(--answer);font-size:.91rem}
+    [hidden] {display:none !important}
+    @media(max-width:850px) {.layout {grid-template-columns:1fr}.exercise {min-height:480px}.theme-list {grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:520px) {.shell {margin:15px auto 25px}.logo {width:40px;height:40px}.brand p {font-size:.75rem}.exercise {padding:18px;min-height:450px}.settings {padding:18px}.themes {padding:18px}.theme-list {grid-template-columns:1fr}.top {align-items:flex-start}.question {font-size:calc(clamp(1.5rem,7vw,2.5rem) * var(--zoom,1))}.summary {display:block}.summary span {display:block;margin-bottom:6px}}
+    @media(prefers-reduced-motion:reduce) {*,*:before,*:after {scroll-behavior:auto !important;transition:none !important}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand"><div class="logo" aria-hidden="true">∑</div><div><h1>Matemáticas en práctica</h1><p>De primaria a preparatoria · Sin conexión</p></div></div>
+      <button id="theme" class="button secondary small" type="button" aria-label="Cambiar tema visual">◐ Tema</button>
+    </header>
+    <main class="layout">
+      <section class="exercise panel" aria-label="Ejercicio actual">
+        <div class="meta"><span class="pill" id="grade">Seleccionando nivel…</span><span class="count" id="count">Ejercicio 0</span></div>
+        <div class="prompt"><p class="eyebrow" id="topic">¡Vamos a practicar!</p><h2 id="question" class="question" aria-live="polite">Preparando ejercicio…</h2><p id="empty" class="empty" hidden>No hay ejercicios para esta combinación de niveles y temas. Cambia tu selección.</p></div>
+        <div class="answer-panel" aria-live="polite" aria-atomic="true">
+          <div id="waiting" class="answer-placeholder">Piensa en tu respuesta antes de mostrar la solución</div>
+          <div id="result" hidden><div class="answer-label">Respuesta</div><div class="answer" id="answer"></div></div>
+        </div>
+        <div id="explain" class="explain" hidden><strong>¿Cómo se resuelve?</strong><p id="explain-text"></p></div>
+        <div class="progress-row"><span id="phase">Tiempo para resolver</span><span id="clock">5.0 s</span></div>
+        <div class="track" id="track" role="progressbar" aria-label="Progreso del temporizador" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="fill" id="fill"></div></div>
+        <div class="actions">
+          <button class="button secondary" id="pause" type="button">⏸ Pausar</button>
+          <button class="button secondary" id="reveal" type="button">Ver respuesta</button>
+          <button class="button" id="next" type="button">Siguiente →</button>
+        </div>
+      </section>
+
+      <aside class="settings panel" aria-label="Configuración">
+        <div class="section-head"><h2>⚙ Configuración</h2><p>Personaliza tu sesión de estudio.</p></div>
+        <div class="twocol"><label class="field"><span class="field-name">Desde</span><select id="lo"></select></label><label class="field"><span class="field-name">Hasta</span><select id="hi"></select></label></div>
+        <label class="field"><span class="field-name">Tiempo para responder <output id="tqv">5 s</output></span><input type="range" id="tq" min="2" max="30" value="5"></label>
+        <label class="field"><span class="field-name">Tiempo de la respuesta <output id="trv">3 s</output></span><input type="range" id="tr" min="1" max="15" value="3"></label>
+        <div class="twocol">
+          <label class="field"><span class="field-name">Velocidad</span><select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+          <label class="field"><span class="field-name">Tamaño <output id="zoomv">100 %</output></span><input type="range" id="zoom" min="0.7" max="1.5" step="0.1" value="1"></label>
+        </div>
+        <hr class="rule">
+        <label class="check"><input id="auto" type="checkbox" checked> Avance automático</label>
+        <label class="check"><input id="voice" type="checkbox"> Leer ejercicios en voz alta</label>
+        <label class="check"><input id="sound" type="checkbox"> Sonido al revelar la respuesta</label>
+        <label class="check"><input id="steps" type="checkbox" checked> Mostrar explicación</label>
+        <hr class="rule">
+        <div class="section-head"><h2>Tu sesión</h2><p id="stats">0 respuestas vistas · 0 omitidas</p></div>
+        <button id="reset" class="button ghost small" type="button">↻ Reiniciar contador</button>
+      </aside>
+    </main>
+    <section class="themes panel" aria-labelledby="themes-title">
+      <div class="themes-head"><h2 id="themes-title">Temas que quieres practicar</h2><div><button class="button ghost small" id="all" type="button">Todos</button> <button class="button ghost small" id="none" type="button">Ninguno</button></div></div>
+      <div class="theme-list" id="themes"></div>
+    </section>
+    <footer class="summary"><span>Atajos: <kbd>Espacio</kbd> pausar · <kbd>R</kbd> ver respuesta · <kbd>→</kbd> siguiente</span><span>Todo funciona localmente en este archivo HTML.</span></footer>
+  </div>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const random = (a,b) => Math.floor(Math.random() * (b-a+1)) + a;
+  const pick = values => values[random(0,values.length-1)];
+  const gcd = (a,b) => b ? gcd(b,a%b) : Math.abs(a);
+  const fraction = (n,d) => {const g=gcd(n,d);n/=g;d/=g;if(d<0){n=-n;d=-d;}return d===1 ? String(n) : `${n}/${d}`;};
+  const signed = n => (n<0?'− ':'+ ') + Math.abs(n);
+  const parenthesize = n => n<0 ? `(${n})` : String(n);
+  const nonzero = (a,b) => {let x;do{x=random(a,b);}while(x===0);return x;};
+  const superscript = n => String(n).split('').map(d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(d)]).join('');
+  const subscript = n => String(n).split('').map(d=>'₀₁₂₃₄₅₆₇₈₉'[Number(d)]).join('');
+  const triples = () => pick([[3,4,5],[5,12,13],[8,15,17],[6,8,10],[7,24,25]]).map(n=>n*random(1,3));
+  const item = (q,a,explanation) => ({q,a:String(a),explanation});
+  const gradeNames = ['1° Primaria','2° Primaria','3° Primaria','4° Primaria','5° Primaria','6° Primaria','1° Secundaria','2° Secundaria','3° Secundaria','1° Preparatoria','2° Preparatoria','3° Preparatoria'];
+  const topicNames = ['Sumas','Restas','Multiplicación','División','Fracciones y m.c.m.','Decimales y porcentajes','Potencias y raíces','Álgebra y ecuaciones','Geometría','Trigonometría y logaritmos','Cálculo','Conversiones de unidades'];
+  // Cada creador declara su tema: el filtro nunca intenta adivinarlo leyendo el texto.
+  const catalog = [
+    [
+      [0,()=>{const a=random(1,10),b=random(1,20-a);return item(`${a} + ${b}`,a+b,`Suma ${a} unidades y después ${b} unidades.`);} ],
+      [1,()=>{const a=random(3,20),b=random(1,a-1);return item(`${a} − ${b}`,a-b,`Comienza en ${a} y retrocede ${b} unidades.`);} ]
+    ],
+    [
+      [0,()=>{const a=random(10,80),b=random(5,99-a);return item(`${a} + ${b}`,a+b,'Suma por separado unidades y decenas.');}],
+      [1,()=>{const a=random(30,99),b=random(5,a-5);return item(`${a} − ${b}`,a-b,'Resta unidades y decenas; si hace falta, pide prestada una decena.');}]
+    ],
+    [
+      [2,()=>{const a=random(2,10),b=random(2,10);return item(`${a} × ${b}`,a*b,`${a} grupos de ${b} equivalen a ${a*b}.`);} ],
+      [3,()=>{const a=random(2,10),b=random(2,10);return item(`${a*b} ÷ ${a}`,b,`Como ${a} × ${b} = ${a*b}, el cociente es ${b}.`);} ]
+    ],
+    [
+      [0,()=>{const a=random(120,999),b=random(100,999);return item(`${a} + ${b}`,a+b,'Suma unidades, decenas y centenas, cuidando las llevadas.');}],
+      [2,()=>{const a=random(12,99),b=random(3,9);return item(`${a} × ${b}`,a*b,`Usa la propiedad distributiva: (${Math.floor(a/10)*10} + ${a%10}) × ${b}.`);} ],
+      [3,()=>{const b=random(3,12),c=random(11,60);return item(`${b*c} ÷ ${b}`,c,`Comprueba el resultado: ${b} × ${c} = ${b*c}.`);} ]
+    ],
+    [
+      [4,()=>{const d=random(4,12),a=random(1,d-3),b=random(1,d-1-a);return item(`${a}/${d} + ${b}/${d}`,fraction(a+b,d),`Como los denominadores son iguales, suma ${a} + ${b} y conserva el denominador ${d}; simplifica al final.`);} ],
+      [5,()=>{const a=random(11,99),b=random(11,99);return item(`${(a/10).toFixed(1)} + ${(b/10).toFixed(1)}`,((a+b)/10).toFixed(1),'Alinea las comas decimales y suma décimas y unidades.');}],
+      [5,()=>{const p=pick([10,20,25,50]),n=pick([40,80,120,200]);return item(`${p}% de ${n}`,n*p/100,`Multiplica ${n} × ${p}/100.`);} ]
+    ],
+    [
+      [4,()=>{const b=pick([2,3,4,5,6]),d=pick([2,3,4,5,6]),a=random(1,b-1),c=random(1,d-1);return item(`${a}/${b} + ${c}/${d}`,fraction(a*d+c*b,b*d),`Denominador común ${b*d}: (${a}×${d} + ${c}×${b})/${b*d}; luego simplifica.`);} ],
+      [5,()=>{const a=random(2,9),b=random(2,9);return item(`${(a/10).toFixed(1)} × ${b}`,(a*b/10).toFixed(1),`Multiplica ${a} × ${b} y coloca una cifra decimal.`);} ],
+      [4,()=>{const a=pick([4,6,8,9,10,12]),b=pick([6,8,10,12,15]);return item(`m.c.m. de ${a} y ${b}`,a*b/gcd(a,b),`m.c.m. = (${a} × ${b}) / m.c.d.(${a}, ${b}).`);} ],
+      [4,()=>{const a=random(2,9),b=random(2,9),c=random(2,9),d=random(2,9);return item(`${a}/${b} × ${c}/${d}`,fraction(a*c,b*d),`Multiplica numeradores (${a}×${c}) y denominadores (${b}×${d}); simplifica.`);} ]
+    ],
+    [
+      [0,()=>{const a=nonzero(-15,15),b=nonzero(-15,15);return item(`${parenthesize(a)} + ${parenthesize(b)}`,a+b,'Con signos iguales suma valores absolutos; con signos diferentes resta y conserva el signo del mayor valor absoluto.');}],
+      [2,()=>{const a=nonzero(-9,9),b=nonzero(-9,9);return item(`${parenthesize(a)} × ${parenthesize(b)}`,a*b,'Signos iguales producen positivo; signos diferentes producen negativo.');}],
+      [6,()=>{const a=random(2,15);return item(`${a}²`,a*a,`Elevar al cuadrado significa multiplicar ${a} × ${a}.`);} ],
+      [7,()=>{const x=random(-12,20),a=nonzero(-12,12);return item(`x ${signed(a)} = ${x+a}`,`x = ${x}`,`Despeja x restando ${parenthesize(a)} en ambos lados.`);} ]
+    ],
+    [
+      [7,()=>{const x=random(-9,9),a=random(2,9),b=nonzero(-9,9);return item(`${a}x ${signed(b)} = ${a*x+b}`,`x = ${x}`,`Resta ${parenthesize(b)} a ambos lados y divide entre ${a}.`);} ],
+      [7,()=>{const a=random(2,6),k=random(2,9),n=random(2,9);return item(`Si ${a} cuadernos cuestan $${a*k}, ¿cuánto cuestan ${a+n}?`,`$${k*(a+n)}`,`Cada cuaderno cuesta $${k}; multiplica por ${a+n}.`);} ],
+      [8,()=>{const b=random(2,12)*2,h=random(2,12);return item(`Área del triángulo: base ${b}, altura ${h}`,b*h/2,`Área = base × altura / 2 = ${b} × ${h} / 2.`);} ],
+      [6,()=>{const a=random(2,12);return item(`√${a*a}`,a,`La raíz cuadrada principal de ${a*a} es ${a}, porque ${a}² = ${a*a}.`);} ]
+    ],
+    [
+      [8,()=>{const [a,b,c]=triples();return item(`Catetos ${a} y ${b}: ¿hipotenusa?`,c,`Por Pitágoras: √(${a}² + ${b}²) = ${c}.`);} ],
+      [7,()=>{const x=random(-6,6),y=random(-6,6);return item(`x + y = ${x+y}; x − y = ${x-y}`,`x = ${x}, y = ${y}`,'Suma las dos ecuaciones para hallar 2x; después sustituye para obtener y.');}],
+      [7,()=>{const p=nonzero(-7,7),q=nonzero(-7,7);return item(`x² ${signed(-(p+q))}x ${signed(p*q)} = 0`,p===q?`x = ${p}`:`x = ${p}, x = ${q}`,`Factoriza como (x ${signed(-p)})(x ${signed(-q)}) = 0.`);} ]
+    ],
+    [
+      [7,()=>{const a=nonzero(-9,9);return item(`(x ${signed(a)})²`,`x² ${signed(2*a)}x ${signed(a*a)}`,'Usa (x + a)² = x² + 2ax + a², teniendo en cuenta el signo de a.');}],
+      [7,()=>{const a=random(2,12);return item(`Factoriza x² − ${a*a}`,`(x − ${a})(x + ${a})`,'Diferencia de cuadrados: u² − v² = (u − v)(u + v).');}],
+      [7,()=>{const a=nonzero(-4,4),b=nonzero(-9,9),c=nonzero(-9,9),x=random(-3,3);return item(`f(x) = ${a}x² ${signed(b)}x ${signed(c)}; f(${x})`,a*x*x+b*x+c,`Sustituye x = ${x} en cada término y respeta el orden de las operaciones.`);} ],
+      [8,()=>{const x1=random(-5,5),y1=random(-5,5),dx=nonzero(-5,5),dy=random(-8,8);return item(`Pendiente entre (${x1}, ${y1}) y (${x1+dx}, ${y1+dy})`,fraction(dy,dx),`m = (y₂ − y₁)/(x₂ − x₁) = ${dy}/${dx}.`);} ]
+    ],
+    [
+      [9,()=>{const [q,a]=pick([['sen 30°','1/2'],['cos 60°','1/2'],['sen 90°','1'],['cos 0°','1'],['tan 45°','1'],['cos 90°','0']]);return item(q,a,'Usa los valores trigonométricos exactos de los ángulos notables.');}],
+      [9,()=>{const b=pick([2,3,5,10]),n=random(2,4);return item(`log${subscript(b)}(${b**n})`,n,`Un logaritmo pregunta a qué exponente elevar ${b} para obtener ${b**n}.`);} ],
+      [7,()=>{const a=random(1,10),d=nonzero(-5,5),n=random(5,12);return item(`Progresión: a₁ = ${a}, d = ${d}. ¿a${subscript(n)}?`,a+(n-1)*d,`Utiliza aₙ = a₁ + (n − 1)d = ${a} + (${n} − 1)(${d}).`);} ],
+      [7,()=>{const a=random(1,3),b=nonzero(-8,8),c=nonzero(-8,8);return item(`Discriminante de ${a}x² ${signed(b)}x ${signed(c)}`,b*b-4*a*c,`Calcula Δ = b² − 4ac = (${b})² − 4(${a})(${c}).`);} ],
+      [8,()=>{const [a,b,c]=triples();return item(`Distancia entre (0, 0) y (${a}, ${b})`,c,`d = √(${a}² + ${b}²) = ${c}.`);} ]
+    ],
+    [
+      [10,()=>{const a=random(2,9),n=random(2,6);return item(`d/dx (${a}x${superscript(n)})`,`${a*n}x${n-1===1?'':superscript(n-1)}`,`La regla de la potencia dice d/dx(axⁿ) = anxⁿ⁻¹.`);} ],
+      [10,()=>{const n=random(1,4),k=random(1,5),a=(n+1)*k;return item(`∫ ${a}x${n===1?'':superscript(n)} dx`,`${k}x${superscript(n+1)} + C`,'Para integrar una potencia suma 1 al exponente, divide el coeficiente entre el nuevo exponente y añade C.');}],
+      [10,()=>{const a=random(1,9);return item(`lím x→${a} (x² − ${a*a})/(x − ${a})`,2*a,`Factoriza x² − ${a*a} = (x − ${a})(x + ${a}), simplifica y sustituye x = ${a}.`);} ],
+      [10,()=>{const a=random(2,9),b=random(2,9);return item(`d/dx (${a}x² + ${b}x), en x = 1`,2*a+b,`La derivada es ${2*a}x + ${b}; evalúa en x = 1.`);} ]
+    ]
+  ];
+
+  const conversions = [
+    {a:['kilogramo','kilogramos'],b:['gramo','gramos'],f:1000,level:0},
+    {a:['metro','metros'],b:['centímetro','centímetros'],f:100,level:0},
+    {a:['hora','horas'],b:['minuto','minutos'],f:60,level:0},
+    {a:['día','días'],b:['hora','horas'],f:24,level:0},
+    {a:['semana','semanas'],b:['día','días'],f:7,level:0},
+    {a:['litro','litros'],b:['mililitro','mililitros'],f:1000,level:1},
+    {a:['kilómetro','kilómetros'],b:['metro','metros'],f:1000,level:1},
+    {a:['centímetro','centímetros'],b:['milímetro','milímetros'],f:10,level:1},
+    {a:['minuto','minutos'],b:['segundo','segundos'],f:60,level:1},
+    {a:['año','años'],b:['mes','meses'],f:12,level:1},
+    {a:['tonelada','toneladas'],b:['kilogramo','kilogramos'],f:1000,level:1},
+    {a:['gramo','gramos'],b:['miligramo','miligramos'],f:1000,level:2},
+    {a:['metro','metros'],b:['milímetro','milímetros'],f:1000,level:2}
+  ];
+  function conversion(grade){
+    const level=grade<4?0:grade<6?1:2;
+    const u=pick(conversions.filter(x=>x.level<=level));
+    if(u.a[0]==='hora'&&level>=1&&random(0,2)===0){
+      const h=random(2,5),m=pick([10,15,20,30,45]);
+      return item(`Convierte ${h} horas y ${m} minutos a minutos`,`${h*60+m} minutos`,`Multiplica ${h} × 60 y suma ${m}.`);
+    }
+    const value=level===2&&random(0,2)===0?random(1,9)+0.5:random(2,12);
+    if(level===0||random(0,1)) return item(`Convierte ${value} ${value===1?u.a[0]:u.a[1]} a ${u.b[1]}`,`${value*u.f} ${u.b[1]}`,`Cada ${u.a[0]} equivale a ${u.f} ${u.b[1]}; multiplica.`);
+    return item(`Convierte ${value*u.f} ${u.b[1]} a ${u.a[1]}`,`${value} ${value===1?u.a[0]:u.a[1]}`,`Divide entre ${u.f} para convertir a ${u.a[1]}.`);
+  }
+
+  const configKeys=['lo','hi','tq','tr','speed','zoom','auto','voice','sound','steps'];
+  let selected=new Set(topicNames.map((_,i)=>i));
+  let phase='question',elapsed=0,paused=false,question=null,exerciseNumber=0,viewed=0,skipped=0;
+  let previous=[],lastFrame=performance.now(),audioContext=null;
+  const isAutomatic=()=>$('auto').checked;
+  const seconds=()=>(phase==='question'?Number($('tq').value):Number($('tr').value))*1000;
+  const config={};
+  try {Object.assign(config,JSON.parse(localStorage.getItem('matematicas.practica.v2')||'{}'));} catch (_) {}
+
+  gradeNames.forEach((name,index)=>{ $('lo').add(new Option(name,index));$('hi').add(new Option(name,index)); });
+  $('lo').value='0';$('hi').value='11';
+  topicNames.forEach((name,index)=>{
+    const label=document.createElement('label');label.className='check';
+    const check=document.createElement('input');check.type='checkbox';check.value=String(index);check.checked=true;
+    check.addEventListener('change',()=>{if(check.checked)selected.add(index);else selected.delete(index);save();nextExercise(false);});
+    label.append(check,document.createTextNode(name));$('themes').append(label);
+  });
+  const checks=()=>[...$('themes').querySelectorAll('input')];
+  function applyTheme(value){
+    if(value==='dark'||value==='light')document.documentElement.dataset.theme=value;
+    else document.documentElement.removeAttribute('data-theme');
+    const dark=document.documentElement.dataset.theme==='dark'||(!document.documentElement.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);
+    $('theme').textContent=dark?'☀ Tema claro':'◐ Tema oscuro';
+  }
+  if(config&&typeof config==='object'){
+    configKeys.forEach(id=>{
+      const el=$(id),value=config[id];
+      if(value===undefined)return;
+      if(el.type==='checkbox'){if(typeof value==='boolean')el.checked=value;}
+      else if(el.tagName==='SELECT'){if([...el.options].some(opt=>opt.value===String(value)))el.value=String(value);}
+      else if(el.type==='range'&&Number.isFinite(Number(value))){el.value=String(Math.min(Number(el.max),Math.max(Number(el.min),Number(value))));}
+    });
+    if(Array.isArray(config.selected)){
+      selected=new Set(config.selected.filter(n=>Number.isInteger(n)&&n>=0&&n<topicNames.length));
+      checks().forEach(ch=>ch.checked=selected.has(Number(ch.value)));
+    }
+    applyTheme(config.theme);
+  }else applyTheme();
+  function save(){
+    const state={selected:[...selected],theme:document.documentElement.dataset.theme||'system'};
+    configKeys.forEach(id=>{const el=$(id);state[id]=el.type==='checkbox'?el.checked:el.value;});
+    try {localStorage.setItem('matematicas.practica.v2',JSON.stringify(state));} catch(_) {}
+  }
+  function labels(){
+    $('tqv').value=$('tq').value+' s'; $('trv').value=$('tr').value+' s';
+    $('zoomv').value=Math.round(Number($('zoom').value)*100)+' %';
+    document.documentElement.style.setProperty('--zoom',$('zoom').value);
+    $('pause').textContent=paused?'▶ Continuar':'⏸ Pausar';
+    $('pause').disabled=!question;
+    $('reveal').disabled=!question||phase==='answer';
+    $('next').disabled=!question&&!(available().length>0);
+    $('stats').textContent=`${viewed} ${viewed===1?'respuesta vista':'respuestas vistas'} · ${skipped} ${skipped===1?'omitida':'omitidas'}`;
+  }
+  function available(){
+    const a=Math.min(Number($('lo').value),Number($('hi').value));
+    const b=Math.max(Number($('lo').value),Number($('hi').value));
+    const result=[];
+    for(let grade=a;grade<=b;grade++){
+      const generators=catalog[grade].filter(([topic])=>selected.has(topic));
+      if(grade>=1&&grade<=7&&selected.has(11))generators.push([11,()=>conversion(grade)]);
+      if(generators.length)result.push({grade,generators});
+    }
+    return result;
+  }
+  function stopVoice(){try{window.speechSynthesis?.cancel();}catch(_) {}}
+  function speak(text){
+    if(!$('voice').checked||!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))return;
+    const s=text.replace(/d\/dx/g,'derivada de').replace(/∫/g,'integral de ').replace(/lím/g,'límite cuando')
+      .replace(/→/g,' tiende a ').replace(/m\.c\.m\./g,'mínimo común múltiplo')
+      .replace(/log([₀-₉]+)/g,(_,digits)=>'logaritmo base '+[...digits].map(c=>'₀₁₂₃₄₅₆₇₈₉'.indexOf(c)).join(''))
+      .replace(/\bsen\b/g,'seno').replace(/\bcos\b/g,'coseno').replace(/\btan\b/g,'tangente')
+      .replace(/(\d)\/(\d)/g,'$1 sobre $2').replace(/\//g,' entre ')
+      .replace(/−/g,' menos ').replace(/\+/g,' más ').replace(/×/g,' por ').replace(/÷/g,' entre ')
+      .replace(/=/g,' igual a ').replace(/√/g,' raíz cuadrada de ').replace(/%/g,' por ciento ')
+      .replace(/²/g,' al cuadrado ').replace(/³/g,' al cubo ').replace(/\$(\d+)/g,'$1 pesos').replace(/[()]/g,' ');
+    try {stopVoice();const u=new SpeechSynthesisUtterance(s);u.lang='es-MX';u.rate=Math.min(1.5,Math.max(.8,Number($('speed').value)));speechSynthesis.speak(u);}catch(_) {}
+  }
+  function beep(){
+    if(!$('sound').checked)return;
+    try {
+      const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
+      audioContext=audioContext||new Audio();void audioContext.resume();
+      for(const [frequency,offset] of [[660,0],[880,.12]]){
+        const oscillator=audioContext.createOscillator(),gain=audioContext.createGain(),start=audioContext.currentTime+offset;
+        oscillator.frequency.value=frequency;oscillator.type='sine';
+        gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.14,start+.025);gain.gain.exponentialRampToValueAtTime(.0001,start+.28);
+        oscillator.connect(gain).connect(audioContext.destination);oscillator.start(start);oscillator.stop(start+.3);
+      }
+    } catch (_) {}
+  }
+  function renderProgress(){
+    const duration=seconds(),pct=question&&isAutomatic()?Math.min(100,elapsed/duration*100):0;
+    $('fill').style.width=pct+'%';$('track').setAttribute('aria-valuenow',String(Math.round(pct)));
+    $('track').classList.toggle('result',phase==='answer');
+    $('phase').textContent=!question?'Sin ejercicio':!isAutomatic()?'Modo manual':paused?'En pausa':phase==='question'?'Tiempo para resolver':'Tiempo para revisar';
+    $('clock').textContent=!question?'—':!isAutomatic()?'Sin límite':`${Math.max(0,(duration-elapsed)/1000).toFixed(1)} s`;
+  }
+  function nextExercise(account=true){
+    if(question&&account&&phase==='question')skipped++;
+    stopVoice();
+    const possibilities=available();
+    if(!possibilities.length){
+      question=null;phase='question';elapsed=0;
+      $('grade').textContent='Sin coincidencias';$('topic').textContent='Ajusta tus filtros';
+      $('question').textContent='No hay ejercicios disponibles';$('empty').hidden=false;
+      $('count').textContent=`Ejercicio ${exerciseNumber}`;
+      $('waiting').hidden=false;$('result').hidden=true;$('explain').hidden=true;
+      renderProgress();labels();return;
+    }
+    $('empty').hidden=true;
+    let candidate,grade,topic;
+    for(let attempts=0;attempts<35;attempts++){
+      const group=pick(possibilities);grade=group.grade;
+      const [chosenTopic,create]=pick(group.generators);topic=chosenTopic;
+      candidate=create();
+      if(!previous.includes(candidate.q))break;
+    }
+    previous.push(candidate.q);if(previous.length>18)previous.shift();
+    question=candidate;exerciseNumber++;phase='question';elapsed=0;
+    $('grade').textContent=gradeNames[grade];$('topic').textContent=topicNames[topic];
+    $('question').textContent=candidate.q;$('count').textContent=`Ejercicio ${exerciseNumber}`;
+    $('waiting').hidden=false;$('result').hidden=true;$('explain').hidden=true;
+    $('answer').textContent='';renderProgress();labels();speak(candidate.q);
+  }
+  function reveal(){
+    if(!question||phase==='answer')return;
+    phase='answer';elapsed=0;viewed++;
+    const answer=question.a;
+    $('answer').textContent=/^[a-z]\s*=/.test(answer)?answer:`= ${answer}`;
+    $('explain-text').textContent=question.explanation;
+    $('explain').hidden=!$('steps').checked;
+    $('waiting').hidden=true;$('result').hidden=false;
+    renderProgress();labels();beep();speak(answer);
+  }
+  function frame(now){
+    const dt=Math.min(100,Math.max(0,now-lastFrame));lastFrame=now;
+    if(question&&!paused&&isAutomatic()&&!document.hidden){
+      elapsed+=dt*Number($('speed').value);
+      if(elapsed>=seconds()){if(phase==='question')reveal();else nextExercise();}
+      renderProgress();
+    }
+    requestAnimationFrame(frame);
+  }
+  $('next').addEventListener('click',()=>nextExercise());
+  $('reveal').addEventListener('click',reveal);
+  $('pause').addEventListener('click',()=>{
+    paused=!paused;if(paused){try{window.speechSynthesis?.pause();}catch(_) {}}
+    else {try{window.speechSynthesis?.resume();}catch(_) {}}
+    labels();renderProgress();
+  });
+  $('theme').addEventListener('click',()=>{
+    const isDark=document.documentElement.dataset.theme==='dark'||(!document.documentElement.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);
+    applyTheme(isDark?'light':'dark');save();
+  });
+  $('all').addEventListener('click',()=>{selected=new Set(topicNames.map((_,i)=>i));checks().forEach(c=>c.checked=true);save();nextExercise(false);});
+  $('none').addEventListener('click',()=>{selected.clear();checks().forEach(c=>c.checked=false);save();nextExercise(false);});
+  $('reset').addEventListener('click',()=>{exerciseNumber=0;viewed=0;skipped=0;previous=[];nextExercise(false);});
+  for(const id of configKeys){
+    const el=$(id);
+    el.addEventListener(el.type==='range'?'input':'change',()=>{
+      if(id==='lo'||id==='hi')nextExercise(false);
+      if(id==='zoom'||id==='tq'||id==='tr')labels();
+      if(id==='auto')renderProgress();
+      if(id==='steps')$('explain').hidden=!(question&&phase==='answer'&&el.checked);
+      if(id==='voice'){if(el.checked&&question)speak(phase==='question'?question.q:question.a);else stopVoice();}
+      if(id==='sound'&&el.checked)beep();
+      save();
+    });
+  }
+  addEventListener('keydown',event=>{
+    if(event.altKey||event.ctrlKey||event.metaKey||event.target.closest('button,input,select,textarea,summary'))return;
+    if(event.code==='Space'){event.preventDefault();if(question)$('pause').click();}
+    if(event.key.toLowerCase()==='r')reveal();
+    if(event.code==='ArrowRight'){event.preventDefault();nextExercise();}
+  });
+  document.addEventListener('visibilitychange',()=>{lastFrame=performance.now();if(document.hidden)stopVoice();renderProgress();});
+  addEventListener('pagehide',stopVoice);
+  labels();nextExercise(false);requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
